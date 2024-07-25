@@ -1,7 +1,11 @@
 import 'package:currenci_app/ui/currenci_screen/currency_screen.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'data/source/local/shared_preferences_helper.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await SharedPreferencesHelper.init();
   runApp(const MyApp());
 }
 
@@ -11,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),

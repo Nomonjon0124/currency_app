@@ -1,9 +1,13 @@
 import 'package:currenci_app/presentation/currency_bloc/currency_bloc.dart';
 import 'package:currenci_app/ui/currenci_screen/item_currency.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../utils/language.dart';
 import '../../utils/status.dart';
+import '../components/language_dialog.dart';
+import 'fail_view.dart';
 
 class CurrencyScreen extends StatefulWidget {
   const CurrencyScreen({super.key});
@@ -37,9 +41,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
             builder: (context, state) {
               return Row(
                 children: [
-                  const Text(
-                    'VALYUTA',
-                    style: TextStyle(
+                  Text(
+                    _getTitle(context),
+                    style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
@@ -55,11 +59,20 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                       ),
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: Icon(
-                      Icons.language,
-                      color: Colors.white,
+                  GestureDetector(
+                    onTap: () => _onChangeLanguage(
+                      context: context,
+                      onClick: (Language language) {
+                        context.read<CurrencyBloc>().add(ChangeLanguageEvent(language: language));
+                      },
+                      selectedLanguage: context.read<CurrencyBloc>().state.language,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: Icon(
+                        Icons.language,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -83,11 +96,12 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               );
             } else {
               if (state.status == Status.fail) {
-                return const Placeholder();
+                return FailView(errorMessage: state.errorMessage??'',);
               } else {
                 return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    return ItemCurrency(state.data, context, index);
+                    return ItemCurrencyI(data: state.data, context: context, index: index);
                   },
                   itemCount: state.data?.length,
                 );
@@ -112,4 +126,32 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           .add(GetDateCurrencyEvent(picked.toString().substring(0, 10)));
     } else {}
   }
+}
+
+String _getTitle(BuildContext context) {
+  return switch (context.read<CurrencyBloc>().state.language) {
+    Language.uzbekKirill => 'Валюта',
+    Language.uzbekLatin => 'Valyuta',
+    Language.english => 'Currency',
+    Language.russian => 'Валюта',
+  };
+}
+
+Future<void> _onChangeLanguage({
+  required BuildContext context,
+  required void Function(Language language) onClick,
+  required Language selectedLanguage,
+}) async {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) {
+      return BlocProvider.value(
+        value: context.read<CurrencyBloc>(),
+        child: LanguageDialog(
+          onClick: onClick,
+        ),
+      );
+    },
+  );
 }

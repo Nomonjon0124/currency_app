@@ -10,3 +10,9 @@ class GetDateCurrencyEvent extends CurrencyEvent{
   String date;
   GetDateCurrencyEvent(this.date);
 }
+
+final class ChangeLanguageEvent extends CurrencyEvent {
+  final Language language;
+
+  ChangeLanguageEvent({required this.language});
+}
